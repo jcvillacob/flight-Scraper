@@ -10,7 +10,15 @@ def save_flights_to_excel(flights_data):
 
     for airline_data in flights_data:
         airline = airline_data['airline']
-        all_flights = airline_data['outbound'] + airline_data['return']
+        all_flights = []
+
+        for flight in airline_data['outbound']:
+            flight['type'] = 'outbound'
+            all_flights.append(flight)
+
+        for flight in airline_data['return']:
+            flight['type'] = 'return'
+            all_flights.append(flight)
 
         df = pd.DataFrame(all_flights)
         df.to_excel(writer, sheet_name=airline, index=False)
@@ -24,10 +32,12 @@ def save_recommendations_to_excel(recommendations):
     for rec in recommendations:
         formatted_recommendations.append({
             'airline': rec['airline'],
+            'outbound_date': rec['outbound']['date'],
             'outbound_departure_time': rec['outbound']['departure_time'],
             'outbound_departure_city': rec['outbound']['departure_city'],
             'outbound_arrival_time': rec['outbound']['arrival_time'],
             'outbound_arrival_city': rec['outbound']['arrival_city'],
+            'return_date': rec['return']['date'],
             'return_departure_time': rec['return']['departure_time'],
             'return_departure_city': rec['return']['departure_city'],
             'return_arrival_time': rec['return']['arrival_time'],

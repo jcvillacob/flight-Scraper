@@ -3,18 +3,12 @@ import pandas as pd
 # Leer el archivo Excel
 rutas_df = pd.read_excel('rutas.xlsx')
 
-# Asumimos que solo hay una fila en el archivo Excel con los datos necesarios
-ruta = rutas_df.iloc[0]
-
 # Convertir las fechas a cadenas en el formato adecuado
-departure_date = pd.to_datetime(ruta['Fecha_salida']).strftime('%Y-%m-%d')
-return_date = pd.to_datetime(ruta['Fecha_llegada']).strftime('%Y-%m-%d')
+rutas_df['Fecha_salida'] = pd.to_datetime(rutas_df['Fecha_salida']).dt.strftime('%Y-%m-%d')
+rutas_df['Fecha_llegada'] = pd.to_datetime(rutas_df['Fecha_llegada']).dt.strftime('%Y-%m-%d')
 
-# Asignar valores desde el archivo Excel
-ORIGIN = ruta['Salida']
-DESTINATION = ruta['Llegada']
-DEPARTURE_DATE = departure_date
-RETURN_DATE = return_date
+# Convertir el DataFrame en una lista de diccionarios
+rutas = rutas_df.to_dict(orient='records')
 
 AIRLINES = {
     'LATAM': 'https://www.latamairlines.com/co/es/ofertas-vuelos?origin={origin}&inbound={return_date}&outbound={departure_date}&destination={destination}&adt=1&chd=0&inf=0&trip=RT&cabin=Economy&redemption=false&sort=RECOMMENDED',

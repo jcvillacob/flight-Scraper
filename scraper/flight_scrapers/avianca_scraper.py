@@ -22,7 +22,7 @@ def get_avianca_flight_data(driver, origin, destination, departure_date, return_
         WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))).click()
         time.sleep(2)
     except Exception as e:
-        print(f"Error clicking on cookies button: {e}")
+        print(f"Error clicking on cookies button")
 
     outbound_elements = driver.find_elements(By.CSS_SELECTOR, '.journey_inner')
     for element in outbound_elements:
@@ -37,6 +37,7 @@ def get_avianca_flight_data(driver, origin, destination, departure_date, return_
                 price = parse_price(price_text, 'Avianca')
 
                 flights['outbound'].append({
+                    'date': departure_date,
                     'departure_time': departure_time,
                     'departure_city': departure_city,
                     'arrival_time': arrival_time,
@@ -77,6 +78,7 @@ def get_avianca_flight_data(driver, origin, destination, departure_date, return_
                 price = parse_price(price_text, 'Avianca')
 
                 flights['return'].append({
+                    'date': return_date,
                     'departure_time': departure_time,
                     'departure_city': departure_city,
                     'arrival_time': arrival_time,

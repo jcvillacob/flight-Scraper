@@ -28,6 +28,7 @@ def get_wingo_flight_data(driver, origin, destination, departure_date, return_da
             price = parse_price(price_text, 'Wingo')
 
             flights['outbound'].append({
+                'date': departure_date,
                 'departure_time': departure_time,
                 'departure_city': departure_city,
                 'arrival_time': arrival_time,
@@ -49,6 +50,7 @@ def get_wingo_flight_data(driver, origin, destination, departure_date, return_da
             price = parse_price(price_text, 'Wingo')
 
             flights['return'].append({
+                'date': return_date,
                 'departure_time': departure_time,
                 'departure_city': departure_city,
                 'arrival_time': arrival_time,
