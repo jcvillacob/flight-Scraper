@@ -1,9 +1,36 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import re
 import pandas as pd
+import requests
+
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+
+def send_recommendation_to_api(rec, api_url):
+    recommendation = {
+        'airline': rec['airline'],
+        'outbound_date': rec['outbound']['date'],
+        'outbound_departure_time': rec['outbound']['departure_time'],
+        'outbound_departure_city': rec['outbound']['departure_city'],
+        'outbound_arrival_time': rec['outbound']['arrival_time'],
+        'outbound_arrival_city': rec['outbound']['arrival_city'],
+        'return_date': rec['return']['date'],
+        'return_departure_time': rec['return']['departure_time'],
+        'return_departure_city': rec['return']['departure_city'],
+        'return_arrival_time': rec['return']['arrival_time'],
+        'return_arrival_city': rec['return']['arrival_city'],
+        'total_price': rec['total_price']
+    }
+    try:
+        response = requests.post(api_url, json=recommendation)
+        if response.status_code in (200, 201):
+            print("Recomendación enviada exitosamente.")
+        else:
+            print(f"Error al enviar la recomendación: {response.status_code}")
+            print(f"Detalle del error: {response.text}")
+    except requests.exceptions.RequestException as e:
+        print(f"Excepción al enviar la recomendación: {e}")
 
 def save_flights_to_excel(flights_data):
     writer = pd.ExcelWriter('output/flights_data.xlsx', engine='openpyxl')
@@ -30,6 +57,7 @@ def save_recommendations_to_excel(recommendations):
 
     formatted_recommendations = []
     for rec in recommendations:
+
         formatted_recommendations.append({
             'airline': rec['airline'],
             'outbound_date': rec['outbound']['date'],
@@ -53,13 +81,15 @@ def save_recommendations_to_excel(recommendations):
 def initialize_browser():
     options = Options()
     options.add_argument("--start-maximized")
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    # Elimina la ruta manual al chromedriver y utiliza ChromeDriverManager
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=options)
     return driver
 
 def parse_price(price_text, airline):
     price = re.sub(r'\D', '', price_text)
-    if airline == 'LATAM':
-        price = price[:-2]
+    #if airline == 'LATAM':
+    #    price = price[:-2]
     return int(price)
 
 def find_best_combinations(flights_data):

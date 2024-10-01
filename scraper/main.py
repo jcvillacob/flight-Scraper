@@ -2,18 +2,20 @@ import threading
 import time
 import os
 
-from scraper.utils import initialize_browser, save_flights_to_excel, save_recommendations_to_excel, find_best_combinations
+from scraper.utils import initialize_browser, save_flights_to_excel, save_recommendations_to_excel, find_best_combinations, send_recommendation_to_api
 from scraper.config import AIRLINES, rutas
 from scraper.flight_scrapers.latam_scraper import get_latam_flight_data
 from scraper.flight_scrapers.wingo_scraper import get_wingo_flight_data
 from scraper.flight_scrapers.avianca_scraper import get_avianca_flight_data
 import pyautogui
 
+API_URL = "http://localhost:4000/api/v1/pruebas/vuelos/"
+
 def move_mouse():
     while not stop_mouse_thread:
-        pyautogui.moveRel(0, 1)  # Mover el mouse 1 píxel hacia abajo
-        pyautogui.moveRel(0, -1)  # Mover el mouse 1 píxel hacia arriba
-        time.sleep(10)  # Esperar 10 segundos antes de moverlo nuevamente
+        pyautogui.moveRel(0, 1)
+        pyautogui.moveRel(0, -1)
+        time.sleep(10)
 
 # Variable global para controlar el hilo del mouse
 stop_mouse_thread = False
@@ -54,22 +56,23 @@ def main():
     save_flights_to_excel(all_flights)
     save_recommendations_to_excel(best_combinations)
 
-    if best_combinations:
-        best = best_combinations[0]
-        print(f"Aerolínea: {best['airline']}")
-        print(f"  Vuelo de salida: {best['outbound']}")
-        print(f"  Vuelo de regreso: {best['return']}")
-        print(f"  Precio total: {best['total_price']} COP")
-        # send_flight_alert(best)
-    else:
-        print("No se encontraron combinaciones de vuelos.")
+    # Filtrar las combinaciones por debajo de 400,000 COP
+    filtered_combinations = [comb for comb in best_combinations if comb['total_price'] < 100000]
+
+    # Enviar todas las recomendaciones filtradas al API
+    for recommendation in filtered_combinations:
+        send_recommendation_to_api(recommendation, API_URL)
+        print(f"Aerolínea: {recommendation['airline']}")
+        print(f"  Vuelo de salida: {recommendation['outbound']}")
+        print(f"  Vuelo de regreso: {recommendation['return']}")
+        print(f"  Precio total: {recommendation['total_price']} COP")
+
+    if not filtered_combinations:
+        print("No se encontraron combinaciones de vuelos por debajo de 100,000 COP.")
 
     # Detener el hilo de mover el mouse
     stop_mouse_thread = True
     mouse_thread.join()
-
-    # Comando para bloquear el equipo en Windows
-    os.system("rundll32.exe user32.dll,LockWorkStation")
 
 if __name__ == "__main__":
     main()
